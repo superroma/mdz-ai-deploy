@@ -1,0 +1,20 @@
+# ---- build ----
+FROM node:20-slim AS build
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+ARG MDZ_REPO=https://github.com/superroma/mdz
+ARG MDZ_REF=main
+WORKDIR /src
+RUN git clone "$MDZ_REPO" . && git checkout "$MDZ_REF"
+RUN npm install && npm run build
+
+# ---- runtime ----
+FROM node:20-slim AS runtime
+WORKDIR /app
+COPY --from=build /src /app
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV HOST=0.0.0.0
+EXPOSE 3001
+# PAGES_ROOT is provided at runtime (the shared volume)
+CMD ["npm", "run", "start", "--workspace", "@app/backend"]
