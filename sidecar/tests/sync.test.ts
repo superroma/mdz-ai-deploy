@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { execa } from "execa";
 import { loadConfigFromEnv, type SyncConfig } from "../src/config.js";
-import { ensureExclusions, commitLocal } from "../src/sync.js";
+import { ensureExclusions, commitLocal, pullRemote, pushIfAhead } from "../src/sync.js";
 import { git } from "../src/git.js";
 import { makeRepos } from "./helpers.js";
 
@@ -12,6 +13,14 @@ function cfgFor(workDir: string): SyncConfig {
     botName: "mdz-bot", botEmail: "bot@mdz.local",
     excludePaths: [".auth/"], commitDebounceMs: 5000, pollIntervalMs: 45000,
   };
+}
+
+async function commitInOther(otherDir: string, file: string, body: string) {
+  await execa("git", ["-C", otherDir, "pull", "--ff-only", "origin", "main"]).catch(() => {});
+  writeFileSync(join(otherDir, file), body);
+  await execa("git", ["-C", otherDir, "add", "-A"]);
+  await execa("git", ["-C", otherDir, "commit", "-m", `other ${file}`]);
+  await execa("git", ["-C", otherDir, "push", "origin", "main"]);
 }
 
 describe("loadConfigFromEnv", () => {
@@ -73,5 +82,44 @@ describe("commitLocal", () => {
     const tracked = await git(repos.workDir, ["ls-files"]);
     expect(tracked).not.toMatch(/\.auth/);
     expect(tracked).toMatch(/page\.md/);
+  });
+});
+
+describe("pullRemote / pushIfAhead", () => {
+  let repos: Awaited<ReturnType<typeof makeRepos>>;
+  beforeEach(async () => { repos = await makeRepos(); });
+  afterEach(() => repos.cleanup());
+
+  it("reports up-to-date when nothing changed remotely", async () => {
+    const cfg = cfgFor(repos.workDir);
+    expect(await pullRemote(cfg)).toBe("up-to-date");
+  });
+
+  it("pulls remote changes into the working tree", async () => {
+    const cfg = cfgFor(repos.workDir);
+    await commitInOther(repos.otherDir, "remote.md", "from-remote");
+    expect(await pullRemote(cfg)).toBe("updated");
+    expect(readFileSync(join(repos.workDir, "remote.md"), "utf8")).toBe("from-remote");
+  });
+
+  it("remote wins on a true conflict", async () => {
+    const cfg = cfgFor(repos.workDir);
+    await ensureExclusions(cfg);
+    writeFileSync(join(repos.workDir, "conflict.md"), "LOCAL");
+    await commitLocal(cfg);
+    await commitInOther(repos.otherDir, "conflict.md", "REMOTE");
+    const result = await pullRemote(cfg);
+    expect(["updated", "reset"]).toContain(result);
+    expect(readFileSync(join(repos.workDir, "conflict.md"), "utf8")).toBe("REMOTE");
+  });
+
+  it("pushes local commits that are ahead of remote", async () => {
+    const cfg = cfgFor(repos.workDir);
+    await ensureExclusions(cfg);
+    writeFileSync(join(repos.workDir, "mine.md"), "mine");
+    await commitLocal(cfg);
+    expect(await pushIfAhead(cfg)).toBe(true);
+    await execa("git", ["-C", repos.otherDir, "pull", "--ff-only", "origin", "main"]);
+    expect(readFileSync(join(repos.otherDir, "mine.md"), "utf8")).toBe("mine");
   });
 });
