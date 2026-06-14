@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile.mdz
       args:
         MDZ_REF: ${MDZ_REF}
+    restart: unless-stopped
     environment:
       PAGES_ROOT: /data/repo/${PAGES_SUBDIR}
       JWT_SECRET: ${JWT_SECRET}
@@ -22,6 +23,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.sidecar
+    restart: unless-stopped
     environment:
       SYNC_REPO_DIR: /data/repo
       SYNC_BRANCH: ${SYNC_BRANCH}
@@ -41,6 +43,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN}
     volumes:

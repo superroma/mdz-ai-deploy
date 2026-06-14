@@ -7,6 +7,8 @@ ARG MDZ_REF=main
 WORKDIR /src
 RUN git clone "$MDZ_REPO" . && git checkout "$MDZ_REF"
 RUN npm install && npm run build
+# Drop dev dependencies and the cloned git history so they don't reach the runtime image.
+RUN npm prune --omit=dev && rm -rf .git
 
 # ---- runtime ----
 FROM node:20-slim AS runtime
