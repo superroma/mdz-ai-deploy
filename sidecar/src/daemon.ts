@@ -28,8 +28,12 @@ async function main() {
     timer = setTimeout(() => { void syncer.request(); }, cfg.commitDebounceMs);
   });
 
-  process.on("SIGTERM", () => { void watcher.close().then(() => process.exit(0)); });
-  process.on("SIGINT", () => { void watcher.close().then(() => process.exit(0)); });
+  const shutdown = () => {
+    if (timer) clearTimeout(timer); // don't let a debounced sync race process.exit
+    void watcher.close().then(() => process.exit(0));
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 main().catch((err) => { console.error("[sidecar] fatal", err); process.exit(1); });
