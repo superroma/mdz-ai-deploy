@@ -1,5 +1,5 @@
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { execa } from "execa";
 import { git, isAncestor } from "./git.js";
 import type { SyncConfig } from "./config.js";
@@ -8,11 +8,18 @@ export async function ensureExclusions(cfg: SyncConfig): Promise<void> {
   // Adds excludePaths to .git/info/exclude so they are never staged or committed.
   // NOTE: this only affects UNTRACKED paths. Anything already tracked (e.g. if a
   // secret was ever committed) keeps syncing — excluded paths must never be committed.
-  const excludeFile = join(cfg.repoDir, ".git", "info", "exclude");
+  const gitDir = join(cfg.repoDir, ".git");
+  if (!existsSync(gitDir)) {
+    throw new Error(`Not a git repository: ${cfg.repoDir}`);
+  }
+  const excludeFile = join(gitDir, "info", "exclude");
   const current = existsSync(excludeFile) ? readFileSync(excludeFile, "utf8") : "";
   const lines = new Set(current.split("\n").map((l) => l.trim()).filter(Boolean));
   const toAdd = cfg.excludePaths.filter((p) => !lines.has(p));
-  if (toAdd.length) appendFileSync(excludeFile, "\n" + toAdd.join("\n") + "\n");
+  if (toAdd.length) {
+    mkdirSync(dirname(excludeFile), { recursive: true }); // a real repo may still lack .git/info
+    appendFileSync(excludeFile, "\n" + toAdd.join("\n") + "\n");
+  }
 }
 
 export async function commitLocal(cfg: SyncConfig): Promise<boolean> {

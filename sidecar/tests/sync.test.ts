@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { execa } from "execa";
 import { loadConfigFromEnv, type SyncConfig } from "../src/config.js";
@@ -82,6 +82,14 @@ describe("commitLocal", () => {
     const tracked = await git(repos.workDir, ["ls-files"]);
     expect(tracked).not.toMatch(/\.auth/);
     expect(tracked).toMatch(/page\.md/);
+  });
+
+  it("creates .git/info/exclude when the info dir is missing", async () => {
+    const cfg = cfgFor(repos.workDir);
+    rmSync(join(repos.workDir, ".git", "info"), { recursive: true, force: true });
+    await ensureExclusions(cfg);
+    const content = readFileSync(join(repos.workDir, ".git", "info", "exclude"), "utf8");
+    expect(content).toMatch(/\.auth\//);
   });
 });
 
