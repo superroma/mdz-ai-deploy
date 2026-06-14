@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { execa } from "execa";
 import { loadConfigFromEnv, type SyncConfig } from "../src/config.js";
-import { ensureExclusions, commitLocal, pullRemote, pushIfAhead } from "../src/sync.js";
+import { ensureExclusions, commitLocal, pullRemote, pushIfAhead, syncOnce, createSyncer } from "../src/sync.js";
 import { git } from "../src/git.js";
 import { makeRepos } from "./helpers.js";
 
@@ -121,5 +121,38 @@ describe("pullRemote / pushIfAhead", () => {
     expect(await pushIfAhead(cfg)).toBe(true);
     await execa("git", ["-C", repos.otherDir, "pull", "--ff-only", "origin", "main"]);
     expect(readFileSync(join(repos.otherDir, "mine.md"), "utf8")).toBe("mine");
+  });
+});
+
+describe("syncOnce", () => {
+  let repos: Awaited<ReturnType<typeof makeRepos>>;
+  beforeEach(async () => { repos = await makeRepos(); });
+  afterEach(() => repos.cleanup());
+
+  it("commits local + pushes, and pulls remote, in one pass", async () => {
+    const cfg = cfgFor(repos.workDir);
+    await ensureExclusions(cfg);
+    writeFileSync(join(repos.workDir, "local.md"), "local");
+    await commitInOther(repos.otherDir, "remote.md", "remote");
+    await syncOnce(cfg);
+    expect(readFileSync(join(repos.workDir, "remote.md"), "utf8")).toBe("remote");
+    await execa("git", ["-C", repos.otherDir, "fetch", "origin", "main"]);
+    const originFiles = await git(repos.otherDir, ["ls-tree", "--name-only", "origin/main"]);
+    expect(originFiles).toMatch(/local\.md/);
+  });
+});
+
+describe("createSyncer", () => {
+  it("coalesces concurrent requests into at most one pending re-run", async () => {
+    let active = 0, max = 0, runs = 0;
+    const slow = () => new Promise<void>((res) => {
+      runs++; active++; max = Math.max(max, active);
+      setTimeout(() => { active--; res(); }, 30);
+    });
+    const cfg = cfgFor("/unused");
+    const syncer = createSyncer(cfg, slow);
+    await Promise.all([syncer.request(), syncer.request(), syncer.request(), syncer.request(), syncer.request()]);
+    expect(max).toBe(1);
+    expect(runs).toBe(2);
   });
 });

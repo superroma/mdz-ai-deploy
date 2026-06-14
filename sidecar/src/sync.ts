@@ -64,3 +64,30 @@ export async function pushIfAhead(cfg: SyncConfig): Promise<boolean> {
   }
   return false;
 }
+
+export async function syncOnce(cfg: SyncConfig): Promise<void> {
+  await commitLocal(cfg);
+  await pullRemote(cfg);
+  await pushIfAhead(cfg);
+}
+
+export function createSyncer(
+  cfg: SyncConfig,
+  runOnce: () => Promise<void> = () => syncOnce(cfg)
+): { request: () => Promise<void> } {
+  let running = false;
+  let pending = false;
+  async function request(): Promise<void> {
+    if (running) { pending = true; return; }
+    running = true;
+    try {
+      do {
+        pending = false;
+        await runOnce();
+      } while (pending);
+    } finally {
+      running = false;
+    }
+  }
+  return { request };
+}
