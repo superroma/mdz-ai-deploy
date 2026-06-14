@@ -5,6 +5,9 @@ import { git, isAncestor } from "./git.js";
 import type { SyncConfig } from "./config.js";
 
 export async function ensureExclusions(cfg: SyncConfig): Promise<void> {
+  // Adds excludePaths to .git/info/exclude so they are never staged or committed.
+  // NOTE: this only affects UNTRACKED paths. Anything already tracked (e.g. if a
+  // secret was ever committed) keeps syncing — excluded paths must never be committed.
   const excludeFile = join(cfg.repoDir, ".git", "info", "exclude");
   const current = existsSync(excludeFile) ? readFileSync(excludeFile, "utf8") : "";
   const lines = new Set(current.split("\n").map((l) => l.trim()).filter(Boolean));
@@ -48,6 +51,10 @@ export async function pullRemote(
     ]);
     return "updated";
   } catch {
+    // "Remote wins": a conflict that -X theirs cannot auto-resolve (e.g.
+    // modify/delete) falls back to a hard reset onto the remote. NOTE: this also
+    // discards any *uncommitted* local edits made in the small window since
+    // commitLocal ran. Accepted tradeoff — GitHub is canonical, local is a workspace.
     await git(cfg.repoDir, ["merge", "--abort"]).catch(() => {});
     await git(cfg.repoDir, ["reset", "--hard", remoteRef]);
     return "reset";
@@ -73,7 +80,8 @@ export async function syncOnce(cfg: SyncConfig): Promise<void> {
 
 export function createSyncer(
   cfg: SyncConfig,
-  runOnce: () => Promise<void> = () => syncOnce(cfg)
+  runOnce: () => Promise<void> = () => syncOnce(cfg),
+  onError: (err: unknown) => void = (err) => console.error("[sidecar] sync failed", err)
 ): { request: () => Promise<void> } {
   let running = false;
   let pending = false;
@@ -83,7 +91,13 @@ export function createSyncer(
     try {
       do {
         pending = false;
-        await runOnce();
+        // Catch per-iteration so a failed run never drops a queued re-run, and
+        // request() never rejects (the daemon calls it fire-and-forget).
+        try {
+          await runOnce();
+        } catch (err) {
+          onError(err);
+        }
       } while (pending);
     } finally {
       running = false;

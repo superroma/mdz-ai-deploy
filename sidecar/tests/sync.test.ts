@@ -155,4 +155,18 @@ describe("createSyncer", () => {
     expect(max).toBe(1);
     expect(runs).toBe(2);
   });
+
+  it("runs the pending re-run even when a run throws, and reports the error", async () => {
+    let runs = 0;
+    const errors: unknown[] = [];
+    const flaky = () => new Promise<void>((res, rej) => {
+      runs++;
+      setTimeout(() => (runs === 1 ? rej(new Error("boom")) : res()), 20);
+    });
+    const cfg = cfgFor("/unused");
+    const syncer = createSyncer(cfg, flaky, (e) => errors.push(e));
+    await Promise.all([syncer.request(), syncer.request()]);
+    expect(runs).toBe(2);          // pending re-run survived the throw
+    expect(errors).toHaveLength(1); // the failure was reported, not dropped
+  });
 });
