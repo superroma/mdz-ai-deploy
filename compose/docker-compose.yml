@@ -1,0 +1,39 @@
+services:
+  mdz:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mdz
+      args:
+        MDZ_REF: ${MDZ_REF}
+    environment:
+      PAGES_ROOT: /data/repo/${PAGES_SUBDIR}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: "3001"
+      HOST: 0.0.0.0
+    volumes:
+      - repo:/data/repo
+    depends_on:
+      sidecar:
+        condition: service_started
+    expose:
+      - "3001"
+
+  sidecar:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sidecar
+    environment:
+      SYNC_REPO_DIR: /data/repo
+      SYNC_BRANCH: ${SYNC_BRANCH}
+      SYNC_BOT_NAME: ${SYNC_BOT_NAME}
+      SYNC_BOT_EMAIL: ${SYNC_BOT_EMAIL}
+      SYNC_DEBOUNCE_MS: ${SYNC_DEBOUNCE_MS}
+      SYNC_POLL_MS: ${SYNC_POLL_MS}
+      SYNC_EXCLUDE: ${SYNC_EXCLUDE}
+      GIT_SSH_COMMAND: "ssh -i /keys/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+    volumes:
+      - repo:/data/repo
+      - ${DEPLOY_KEY}:/keys/deploy_key:ro
+
+volumes:
+  repo:
