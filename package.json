@@ -1,0 +1,21 @@
+{
+  "name": "mdz-ai-deploy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sidecar": "node --import tsx/esm sidecar/src/daemon.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "execa": "^8.0.1",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "5.5.4",
+    "vitest": "^1.6.0"
+  },
+  "engines": { "node": ">=20" }
+}
