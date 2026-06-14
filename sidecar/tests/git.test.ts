@@ -28,4 +28,9 @@ describe("git runner", () => {
     expect(await isAncestor(repos.workDir, prev, head)).toBe(true);
     expect(await isAncestor(repos.workDir, head, prev)).toBe(false);
   });
+
+  it("throws on an invalid ref instead of silently returning false", async () => {
+    const head = await git(repos.workDir, ["rev-parse", "HEAD"]);
+    await expect(isAncestor(repos.workDir, "does-not-exist", head)).rejects.toThrow();
+  });
 });
