@@ -34,7 +34,16 @@ describe("loadConfigFromEnv", () => {
     expect(cfg.repoDir).toBe("/data/repo");
     expect(cfg.remote).toBe("origin");
     expect(cfg.branch).toBe("main");
-    expect(cfg.excludePaths).toEqual([".auth/"]);
+    expect(cfg.excludePaths).toEqual([".auth/", ".settings/"]);
+    expect(cfg.commitDebounceMs).toBe(5000);
+    expect(cfg.pollIntervalMs).toBe(45000);
+  });
+
+  it("falls back to defaults for non-numeric or non-positive intervals", () => {
+    process.env.SYNC_REPO_DIR = "/data/repo";
+    process.env.SYNC_DEBOUNCE_MS = "0";
+    process.env.SYNC_POLL_MS = "abc";
+    const cfg = loadConfigFromEnv();
     expect(cfg.commitDebounceMs).toBe(5000);
     expect(cfg.pollIntervalMs).toBe(45000);
   });

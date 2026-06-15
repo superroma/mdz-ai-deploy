@@ -1,3 +1,7 @@
+# The shared `repo` volume must be populated with the content repo's working
+# tree (a `pages/` dir + `.git/`) BEFORE `up`. In production the control-plane
+# spawn-site skill (Phase 3) clones it; for local testing see docs/smoke-test.md.
+# An empty volume will error-loop mdz and the sidecar.
 services:
   mdz:
     build:
