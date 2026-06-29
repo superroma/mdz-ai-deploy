@@ -9,3 +9,5 @@ agents. Generalizes the hand-built `zb-mdz` deployment.
 ## Design
 
 - [Design spec](docs/superpowers/specs/2026-06-14-mdz-ai-deploy-design.md) (2026-06-14)
+- [Control plane — serving sites](docs/control-plane-serve.md) — `/setup` + `/add-mdz-site`
+- [Combined control-plane + agents plan](docs/superpowers/plans/2026-06-29-control-plane-and-agents.md)

@@ -149,7 +149,7 @@ SKILL phases: preflight (nanoclaw service up, container runtime + image, allowli
 ---
 
 ## Build order
-1. **Part A serve** — split compose, the two serve skills + scripts; verify multi-site end-to-end (independently shippable).
+1. **Part A serve** — split compose, the two serve skills + scripts. **DONE** (see `docs/superpowers/plans/2026-06-29-control-plane-part-a-serve.md`); live multi-site verification is operator-run on the server.
 2. **Code changes** — nanoclaw per-agent `allowedTools` + generalization; mdz short-lived admin token. (Prereqs for secure agents.)
 3. **nanoclaw deploy** wired into `/setup`.
 4. **Per-site general agents** via `/add-agent`.
