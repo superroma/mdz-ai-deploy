@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["sidecar/**/*.ts"]
+  "include": ["sidecar/**/*.ts", "control/**/*.ts"]
 }
