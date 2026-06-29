@@ -100,12 +100,12 @@ Create an empty file `platform/caddy/sites/.gitkeep` (so the dir is tracked whil
 
 - [ ] **Step 2: Append ignore rules to `.gitignore`**
 
-Append these lines to the existing `.gitignore`:
+Append these lines to the existing `.gitignore`. The `sites/`/`secrets/` patterns are **root-anchored with a leading `/`** — an unanchored `sites/` would also match `platform/caddy/sites/`, and once that parent dir is excluded the `!.gitkeep` negation can't re-include it.
 
 ```
 # control-plane per-site state (never committed)
-sites/
-secrets/
+/sites/
+/secrets/
 platform/caddy/sites/*.caddy
 !platform/caddy/sites/.gitkeep
 ```
