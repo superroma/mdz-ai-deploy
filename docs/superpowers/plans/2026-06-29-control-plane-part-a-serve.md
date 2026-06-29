@@ -1125,6 +1125,8 @@ scripts/caddy-reload.sh
 ```
 Writes `platform/caddy/sites/<site>.caddy` and reloads Caddy; the first HTTPS hit provisions the cert via HTTP-01.
 
+> Caution: never `docker compose -p mdz-edge-caddy down -v` — that wipes the shared Let's Encrypt certs/account and risks an ACME rate-limit lockout.
+
 ## 9. Verify + report
 ```bash
 curl --fail https://<site>.<base>/api/health     # {"status":"ok",...}
