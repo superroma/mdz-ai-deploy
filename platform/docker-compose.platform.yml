@@ -1,0 +1,31 @@
+# Shared edge proxy for ALL sites — the ONLY container that binds host ports.
+# Brought up once by /setup as project `mdz-edge-caddy`. Per-site mdz backends
+# join the external network `mdz_edge`; Caddy routes to them via per-site
+# snippets dropped into caddy/sites/ and a `caddy reload`.
+#
+# NEVER `down -v` this project: caddy_data holds the Let's Encrypt certs/account.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mdz_edge
+
+networks:
+  mdz_edge:
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:
