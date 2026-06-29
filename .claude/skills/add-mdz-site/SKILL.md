@@ -1,0 +1,67 @@
+---
+name: add-mdz-site
+description: Stand up one MDZ site from a GitHub content repo — deploy key, per-site secrets, content clone, mdz+sidecar up, owner seed + magic link, and Caddy route. Requires /setup to have run.
+---
+
+# /add-mdz-site — add one site
+
+Run from the `mdz-ai-deploy` repo root on a server already bootstrapped by `/setup`. Idempotent per site.
+
+## 1. Preflight
+- Shared platform up: `docker compose -p mdz-edge-caddy ps` shows Caddy running. If not, run `/setup`.
+
+## 2. Inputs (AskUserQuestion)
+- **Content repo** SSH URL (`git@github.com:owner/repo.git`) and its `owner/repo` slug.
+- **Site name** — a DNS label (`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`); becomes the subdomain, compose project, and Caddy snippet name.
+- **Owner email** (seeded into `admins`).
+- **Branch** (default `main`).
+- **Base domain** — the value chosen in `/setup`.
+
+If `sites/<site>/` or `secrets/<site>/` already exists, reconcile (re-run the steps below) rather than duplicating.
+
+## 3. Deploy key + GitHub registration
+```bash
+scripts/gen-deploy-key.sh <site>
+scripts/add-deploy-key-github.sh <site> <owner/repo>     # or add secrets/<site>/deploy_key.pub manually (write access)
+```
+
+## 4. Render per-site env
+```bash
+scripts/render-site-env.sh <site> <base> <content_repo> 819bb83 <branch>
+```
+Writes `secrets/<site>/.env` (`chmod 600`, fresh `JWT_SECRET`, `SYNC_EXCLUDE=.auth/,.settings/`).
+
+## 5. Clone content
+```bash
+scripts/clone-content.sh <site> <content_repo> <branch>
+```
+Clones into `sites/<site>/repo`, asserts `pages/` exists, and untracks `pages/.settings/users.yaml` if it was committed (keeps member emails off GitHub).
+
+## 6. Bring the site up + wait healthy
+```bash
+scripts/site-up.sh <site>
+scripts/wait-healthy.sh mdz-<site>
+```
+
+## 7. Seed the owner + print the magic link
+```bash
+scripts/seed-admin.sh <site> <owner_email>
+```
+Runs the mdz admin CLI inside the container with `BACKEND_URL=https://<site>.<base>` so the printed `Magic link:` points at the real host. Deliver that link to the owner.
+
+## 8. Route + TLS
+```bash
+scripts/register-route.sh <site> <site>.<base>
+scripts/caddy-reload.sh
+```
+Writes `platform/caddy/sites/<site>.caddy` and reloads Caddy; the first HTTPS hit provisions the cert via HTTP-01.
+
+> Caution: never `docker compose -p mdz-edge-caddy down -v` — that wipes the shared Let's Encrypt certs/account and risks an ACME rate-limit lockout.
+
+## 9. Verify + report
+```bash
+curl --fail https://<site>.<base>/api/health     # {"status":"ok",...}
+```
+Report the site URL + the owner magic link.
+
+> **Part B (deferred):** provisioning this site's general agent and minting its admin token (design step 8) belongs to the agents phase. The content/secrets split here (`sites/` vs `secrets/`) is what later lets a single admin agent mount all content without ever seeing deploy keys or `JWT_SECRET`.
