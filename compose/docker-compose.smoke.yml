@@ -5,8 +5,6 @@
 # tree's "origin" remote (file:///origin/origin.git) resolves inside the
 # container. Production uses a real git@github.com remote + deploy key and does
 # NOT use this file.
-#
-# See docs/smoke-test.md for the full procedure.
 services:
   sidecar:
     volumes:
