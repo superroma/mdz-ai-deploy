@@ -3,3 +3,9 @@ node_modules
 data/
 *.log
 .DS_Store
+
+# control-plane per-site state (never committed)
+/sites/
+/secrets/
+platform/caddy/sites/*.caddy
+!platform/caddy/sites/.gitkeep
