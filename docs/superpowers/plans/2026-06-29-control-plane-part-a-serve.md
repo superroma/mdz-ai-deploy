@@ -722,16 +722,18 @@ Run: `chmod +x scripts/*.sh`
 ```ts
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { execa } from "execa";
-import { mkdtempSync, rmSync, readFileSync, existsSync, cpSync, statSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, existsSync, cpSync, statSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 // Build a throwaway REPO_ROOT containing only what the scripts need: control/ + scripts/.
+// node_modules is SYMLINKED (not copied) — tsx resolution only needs it reachable, and
+// copying it per test (beforeEach) is slow enough to blow the 20s vitest timeout.
 function fakeRepo(): string {
   const root = mkdtempSync(join(tmpdir(), "ctl-scripts-"));
   cpSync(join(process.cwd(), "control"), join(root, "control"), { recursive: true });
   cpSync(join(process.cwd(), "scripts"), join(root, "scripts"), { recursive: true });
-  cpSync(join(process.cwd(), "node_modules"), join(root, "node_modules"), { recursive: true });
+  symlinkSync(join(process.cwd(), "node_modules"), join(root, "node_modules"));
   cpSync(join(process.cwd(), "package.json"), join(root, "package.json"));
   return root;
 }
