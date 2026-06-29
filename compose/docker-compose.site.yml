@@ -1,0 +1,55 @@
+# One MDZ site (mdz + sync sidecar). Brought up per-site by /add-mdz-site as
+# project `mdz-<site>`:
+#   docker compose -p mdz-<site> --project-directory compose \
+#     --env-file ../secrets/<site>/.env -f compose/docker-compose.site.yml up -d --build
+# Binds NO host ports: traffic arrives via the shared platform Caddy over the
+# external `mdz_edge` network, which reaches this mdz as `mdz-${SITE_NAME}:3001`.
+services:
+  mdz:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mdz
+      args:
+        MDZ_REF: ${MDZ_REF}
+    image: mdz-app:${MDZ_REF}
+    restart: unless-stopped
+    environment:
+      PAGES_ROOT: /data/repo/${PAGES_SUBDIR}
+      JWT_SECRET: ${JWT_SECRET}
+      BACKEND_URL: https://${SITE_NAME}.${BASE_DOMAIN}
+      PORT: "3001"
+      HOST: 0.0.0.0
+    volumes:
+      - ../sites/${SITE_NAME}/repo:/data/repo
+    depends_on:
+      sidecar:
+        condition: service_started
+    networks:
+      mdz_edge:
+        aliases:
+          - mdz-${SITE_NAME}
+    expose:
+      - "3001"
+
+  sidecar:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sidecar
+    image: mdz-sidecar:latest
+    restart: unless-stopped
+    environment:
+      SYNC_REPO_DIR: /data/repo
+      SYNC_BRANCH: ${SYNC_BRANCH}
+      SYNC_BOT_NAME: ${SYNC_BOT_NAME}
+      SYNC_BOT_EMAIL: ${SYNC_BOT_EMAIL}
+      SYNC_DEBOUNCE_MS: ${SYNC_DEBOUNCE_MS}
+      SYNC_POLL_MS: ${SYNC_POLL_MS}
+      SYNC_EXCLUDE: ${SYNC_EXCLUDE}
+      GIT_SSH_COMMAND: "ssh -i /keys/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+    volumes:
+      - ../sites/${SITE_NAME}/repo:/data/repo
+      - ../secrets/${SITE_NAME}/deploy_key:/keys/deploy_key:ro
+
+networks:
+  mdz_edge:
+    external: true

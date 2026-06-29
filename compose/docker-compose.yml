@@ -1,3 +1,5 @@
+# LOCAL/SMOKE single-site stack (self-contained: own Caddy + named volume). For
+# production multi-tenant serving use platform/ + compose/docker-compose.site.yml.
 # The shared `repo` volume must be populated with the content repo's working
 # tree (a `pages/` dir + `.git/`) BEFORE `up`. In production the control-plane
 # spawn-site skill (Phase 3) clones it; for local testing use docker-compose.smoke.yml.
