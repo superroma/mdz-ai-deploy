@@ -5,6 +5,7 @@ require_cmd docker curl
 base="${1:?base_domain}"
 host="mdz-selftest.$base"
 snip="$REPO_ROOT/platform/caddy/sites/zz-selftest.caddy"
+trap 'rm -f "$snip"' EXIT
 printf '%s {\n\trespond "ok" 200\n}\n' "$host" > "$snip"
 "$REPO_ROOT/scripts/caddy-reload.sh"
 ok=1

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/lib/common.sh"
+umask 077
 require_cmd node openssl
 # usage: render-site-env.sh <site> <base_domain> <content_repo> <mdz_ref> [branch]
 site="${1:?site}"; base="${2:?base_domain}"; repo="${3:?content_repo}"; ref="${4:?mdz_ref}"; branch="${5:-main}"

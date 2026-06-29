@@ -11,7 +11,7 @@ if [ -d "$dest/.git" ]; then
   log "content already cloned at $dest"
 else
   mkdir -p "$REPO_ROOT/sites/$site"
-  GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
+  GIT_SSH_COMMAND="ssh -i '$key' -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
     git clone --branch "$branch" "$repo" "$dest"
 fi
 [ -d "$dest/pages" ] || die "content repo has no pages/ dir at $dest/pages"
