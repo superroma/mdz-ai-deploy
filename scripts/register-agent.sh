@@ -16,6 +16,7 @@ if [ "$role" = "general" ]; then
   folder="$(ctl agent-folder --site="$site" --role=general)"
   [ -d "$abs_sites/$site/repo/pages" ] || die "missing $abs_sites/$site/repo/pages"
   gid="$(create_group "$site general" "$folder")"
+  case "$gid" in ""|*[[:space:]]*) die "unexpected group id from ncl: '$gid'";; esac
   ncl groups config update --id "$gid" --provider claude --assistant-name "$site"
   # skills minimal + RO pages mount (no ncl command for these -> helper)
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" skills '["welcome"]'
@@ -34,6 +35,7 @@ if [ "$role" = "general" ]; then
 elif [ "$role" = "admin" ]; then
   base="${2:?base}"
   gid="$(create_group "admin" "admin")"
+  case "$gid" in ""|*[[:space:]]*) die "unexpected group id from ncl: '$gid'";; esac
   ncl groups config update --id "$gid" --provider claude --assistant-name "admin"
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" additional_mounts \
     "$(printf '[{"hostPath":"%s","containerPath":"sites","readonly":false}]' "$abs_sites")"

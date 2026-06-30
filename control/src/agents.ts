@@ -26,7 +26,10 @@ export function mergeAllowlistRoot(
   base.allowedRoots = base.allowedRoots ?? [];
   base.blockedPatterns = base.blockedPatterns ?? [];
   const idx = base.allowedRoots.findIndex((r) => r.path === root.path);
-  if (idx >= 0) base.allowedRoots[idx] = { ...base.allowedRoots[idx], ...root };
-  else base.allowedRoots.push(root);
+  if (idx >= 0) {
+    const merged = { ...base.allowedRoots[idx], ...root } as AllowedRoot & { readOnly?: boolean };
+    delete merged.readOnly;
+    base.allowedRoots[idx] = merged;
+  } else base.allowedRoots.push(root);
   return JSON.stringify(base, null, 2) + "\n";
 }

@@ -22,6 +22,6 @@ PLIST
   log "installed launchd re-minter (every 30m): $plist"
 else
   line="*/30 * * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin $REPO_ROOT/scripts/reminter.sh >> $REPO_ROOT/.reminter.log 2>&1"
-  ( crontab -l 2>/dev/null | grep -v 'scripts/reminter.sh'; echo "$line" ) | crontab -
+  ( { crontab -l 2>/dev/null || true; } | grep -v 'scripts/reminter.sh' || true; echo "$line" ) | crontab -
   log "installed cron re-minter (every 30m)"
 fi

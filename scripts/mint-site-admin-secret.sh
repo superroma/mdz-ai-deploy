@@ -5,7 +5,7 @@ require_cmd docker node onecli
 site="${1:?site}"
 ctl site-name --site="$site" >/dev/null
 env="$REPO_ROOT/secrets/$site/.env"; [ -f "$env" ] || die "missing $env"
-base="$(grep -E '^BASE_DOMAIN=' "$env" | cut -d= -f2-)"; [ -n "$base" ] || die "no BASE_DOMAIN in $env"
+base="$(grep -E '^BASE_DOMAIN=' "$env" | cut -d= -f2- || true)"; [ -n "$base" ] || die "no BASE_DOMAIN in $env"
 host="$(ctl site-api-host --site="$site" --base="$base")"
 secret_name="$(ctl admin-secret-name --site="$site")"
 # Mint a fresh token inside the site's mdz container (it holds this site's JWT_SECRET)

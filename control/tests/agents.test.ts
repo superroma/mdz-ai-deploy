@@ -20,6 +20,13 @@ describe("mergeAllowlistRoot", () => {
     expect(j.allowedRoots).toEqual([{ path: "/srv/sites", allowReadWrite: true, description: "mdz content" }]);
     expect(Array.isArray(j.blockedPatterns)).toBe(true);
   });
+  it("drops a legacy readOnly key when updating in place", () => {
+    const existing = JSON.stringify({ allowedRoots: [{ path: "/srv/sites", allowReadWrite: false, readOnly: true }], blockedPatterns: [] });
+    const out = mergeAllowlistRoot(existing, { path: "/srv/sites", allowReadWrite: true });
+    const root = JSON.parse(out).allowedRoots.find((r: any) => r.path === "/srv/sites");
+    expect(root.allowReadWrite).toBe(true);
+    expect(root.readOnly).toBeUndefined();
+  });
   it("updates an existing root in place (idempotent) and preserves siblings", () => {
     const existing = JSON.stringify({
       allowedRoots: [{ path: "/other", allowReadWrite: false }, { path: "/srv/sites", allowReadWrite: false }],
