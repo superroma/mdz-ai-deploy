@@ -15,6 +15,7 @@ per site. Two operator skills drive it.
 2. `/add-mdz-site` — per site (deploy key → env → clone → up → seed owner → route).
 
 ## Notes
+- **Edge modes.** Default `EDGE_MODE=letsencrypt`: Caddy terminates TLS via ACME on :80/:443 (needs a public IP + wildcard A record + `ACME_EMAIL`). `EDGE_MODE=tunnel`: Caddy is a plain-HTTP Host-router on :80 behind a Cloudflare tunnel (TLS at the edge, no ACME) — `Caddyfile.tunnel` + one dashboard public hostname `*.<base> → http://localhost:80`; the DNS/A-record steps are skipped.
 - Never `docker compose -p mdz-edge-caddy down -v` (caddy_data = LE certs).
 - `MDZ_REF` is pinned to `819bb83` (mdz incl. Phase 2 auth).
 - Member emails (`pages/.settings/users.yaml`) are kept off GitHub via `SYNC_EXCLUDE=.auth/,.settings/`.

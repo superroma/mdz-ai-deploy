@@ -6,7 +6,9 @@ base="${1:?base_domain}"
 host="mdz-selftest.$base"
 snip="$REPO_ROOT/platform/caddy/sites/zz-selftest.caddy"
 trap 'rm -f "$snip"' EXIT
-printf '%s {\n\trespond "ok" 200\n}\n' "$host" > "$snip"
+# tunnel mode → http:// so Caddy serves on :80 (TLS terminates at the tunnel edge)
+addr="$host"; [ "$(edge_mode)" = tunnel ] && addr="http://$host"
+printf '%s {\n\trespond "ok" 200\n}\n' "$addr" > "$snip"
 "$REPO_ROOT/scripts/caddy-reload.sh"
 ok=1
 for _ in $(seq 1 20); do

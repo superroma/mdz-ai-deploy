@@ -16,6 +16,11 @@ describe("renderCaddySnippet", () => {
       "demo.example.com {\n\treverse_proxy mdz-demo:3001\n}\n"
     );
   });
+  it("prefixes http:// in tunnel mode so Caddy serves on :80", () => {
+    expect(renderCaddySnippet("demo.example.com", "demo", { http: true })).toBe(
+      "http://demo.example.com {\n\treverse_proxy mdz-demo:3001\n}\n"
+    );
+  });
 });
 
 describe("renderSiteEnv", () => {

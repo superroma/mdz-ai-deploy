@@ -9,3 +9,4 @@ data/
 /secrets/
 platform/caddy/sites/*.caddy
 !platform/caddy/sites/.gitkeep
+platform/.edge-mode

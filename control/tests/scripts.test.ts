@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { execa } from "execa";
-import { mkdtempSync, rmSync, readFileSync, existsSync, cpSync, statSync, symlinkSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, existsSync, cpSync, statSync, symlinkSync, writeFileSync, chmodSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -47,5 +47,36 @@ describe("offline control scripts", () => {
     await expect(
       execa("bash", ["scripts/gen-deploy-key.sh", "Bad_Name"], { cwd: root })
     ).rejects.toThrow();
+  });
+});
+
+describe("platform-up EDGE_MODE toggle", () => {
+  let root: string;
+  let binDir: string;
+  beforeEach(() => {
+    root = fakeRepo();
+    cpSync(join(process.cwd(), "platform"), join(root, "platform"), { recursive: true });
+    // Stub `docker` so the script's branch logic runs without a real daemon.
+    binDir = join(root, "stubbin");
+    mkdirSync(binDir);
+    const stub = join(binDir, "docker");
+    writeFileSync(stub, "#!/usr/bin/env bash\nexit 0\n");
+    chmodSync(stub, 0o755);
+  });
+  afterEach(() => rmSync(root, { recursive: true, force: true }));
+
+  const run = (env: Record<string, string | undefined>) =>
+    execa("bash", ["scripts/platform-up.sh"], {
+      cwd: root,
+      env: { PATH: `${binDir}:${process.env.PATH}`, ACME_EMAIL: undefined, ...env },
+    });
+
+  it("tunnel mode comes up without ACME_EMAIL", async () => {
+    const res = await run({ EDGE_MODE: "tunnel" });
+    expect(res.exitCode).toBe(0);
+  });
+
+  it("letsencrypt mode requires ACME_EMAIL", async () => {
+    await expect(run({ EDGE_MODE: "letsencrypt" })).rejects.toThrow();
   });
 });

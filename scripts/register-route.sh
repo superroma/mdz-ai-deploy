@@ -5,5 +5,6 @@ require_cmd node
 site="${1:?site}"; domain="${2:?domain}"
 ctl site-name --site="$site" >/dev/null
 dest="$REPO_ROOT/platform/caddy/sites/$site.caddy"; mkdir -p "$(dirname "$dest")"
-ctl render-snippet --domain="$domain" --site="$site" > "$dest"
-log "wrote $dest"
+http=""; [ "$(edge_mode)" = tunnel ] && http="--http=true"
+ctl render-snippet --domain="$domain" --site="$site" $http > "$dest"
+log "wrote $dest (edge=$(edge_mode))"

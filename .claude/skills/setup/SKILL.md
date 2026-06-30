@@ -23,7 +23,16 @@ scripts/platform-up.sh
 ```
 Creates the external `mdz_edge` network (idempotent) and starts the shared Caddy as project `mdz-edge-caddy`.
 
-## 4. Wildcard DNS
+**Behind a Cloudflare tunnel?** TLS terminates at the tunnel edge, so run Caddy HTTP-only instead:
+```bash
+EDGE_MODE=tunnel scripts/platform-up.sh   # no ACME_EMAIL; Caddy serves :80 only
+```
+In the Cloudflare Zero Trust dashboard add one public hostname `*.<base> → http://localhost:80`
+(cloudflared preserves the Host header, so per-site snippets route unchanged). Then **skip steps 4–5**
+(DNS is a wildcard CNAME the dashboard manages, not an A record) and go straight to step 6 — the same
+`tls-selftest.sh` works, validating DNS → tunnel → Caddy with Cloudflare's edge cert.
+
+## 4. Wildcard DNS (Let's Encrypt mode only)
 ```bash
 scripts/detect-public-ip.sh         # prints <ip>
 ```

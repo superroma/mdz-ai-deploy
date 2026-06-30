@@ -1,0 +1,9 @@
+# Tunnel edge mode (EDGE_MODE=tunnel): TLS terminates at the Cloudflare tunnel
+# edge, so the shared Caddy is a plain-HTTP Host-router on :80 only — no ACME,
+# no :443. cloudflared forwards `*.<base>` → http://localhost:80 and preserves
+# the original Host header, so the per-site snippets route unchanged.
+{
+	auto_https off
+}
+
+import /etc/caddy/sites/*.caddy

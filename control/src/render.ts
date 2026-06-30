@@ -36,7 +36,11 @@ export function renderSiteEnv(i: SiteEnvInputs): string {
   );
 }
 
-export function renderCaddySnippet(domain: string, site: string): string {
+// In tunnel mode (`http: true`) the address gets an explicit `http://` scheme so
+// Caddy serves the host on :80 (TLS is terminated upstream at the Cloudflare tunnel).
+// A bare hostname would default to :443, which the tunnel never reaches.
+export function renderCaddySnippet(domain: string, site: string, opts?: { http?: boolean }): string {
   validateSiteName(site);
-  return `${domain} {\n\treverse_proxy mdz-${site}:3001\n}\n`;
+  const addr = opts?.http ? `http://${domain}` : domain;
+  return `${addr} {\n\treverse_proxy mdz-${site}:3001\n}\n`;
 }

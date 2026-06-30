@@ -16,3 +16,8 @@ require_cmd() {
 
 # Run the control TS CLI: ctl <subcommand> [--flag=val ...]
 ctl() { node --import tsx/esm "$REPO_ROOT/control/src/cli.ts" "$@"; }
+
+# Edge mode marker written by platform-up.sh: "tunnel" (Caddy HTTP-only on :80) or
+# "letsencrypt" (default — Caddy terminates TLS). Other scripts read this to render
+# per-site snippets as http:// (tunnel) vs https (letsencrypt).
+edge_mode() { cat "$REPO_ROOT/platform/.edge-mode" 2>/dev/null || echo letsencrypt; }

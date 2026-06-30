@@ -13,9 +13,11 @@ services:
       - "443:443"
       - "443:443/udp"
     environment:
-      ACME_EMAIL: ${ACME_EMAIL}
+      ACME_EMAIL: ${ACME_EMAIL:-}
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # CADDY_FILE selects the edge config: default (Let's Encrypt) or
+      # ./caddy/Caddyfile.tunnel (HTTP-only, for EDGE_MODE=tunnel). Set by platform-up.sh.
+      - ${CADDY_FILE:-./caddy/Caddyfile}:/etc/caddy/Caddyfile:ro
       - ./caddy/sites:/etc/caddy/sites:ro
       - caddy_data:/data
       - caddy_config:/config

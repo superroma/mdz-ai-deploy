@@ -33,7 +33,7 @@ function main(): void {
       );
       break;
     case "render-snippet":
-      process.stdout.write(renderCaddySnippet(req("domain"), req("site")));
+      process.stdout.write(renderCaddySnippet(req("domain"), req("site"), { http: arg("http") === "true" }));
       break;
     case "agent-folder":
       process.stdout.write(agentFolder(req("site"), req("role") as "general" | "admin") + "\n");

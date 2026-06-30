@@ -13,6 +13,10 @@ describe("control cli", () => {
     const { stdout } = await RUN(["render-snippet", "--domain=demo.example.com", "--site=demo"]);
     expect(stdout).toBe("demo.example.com {\n\treverse_proxy mdz-demo:3001\n}");
   });
+  it("render-snippet --http=true prefixes http:// (tunnel mode)", async () => {
+    const { stdout } = await RUN(["render-snippet", "--domain=demo.example.com", "--site=demo", "--http=true"]);
+    expect(stdout).toBe("http://demo.example.com {\n\treverse_proxy mdz-demo:3001\n}");
+  });
   it("render-env includes required keys", async () => {
     const { stdout } = await RUN([
       "render-env", "--site=demo", "--base=example.com",
