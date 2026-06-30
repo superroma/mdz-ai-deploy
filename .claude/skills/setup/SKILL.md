@@ -14,7 +14,7 @@ Run from the `mdz-ai-deploy` repo root on the target server. Idempotent; safe to
 ## 2. Inputs (AskUserQuestion)
 - **Base domain** (e.g. `example.com`) — sites become `<site>.<base>`.
 - **ACME email** — for Let's Encrypt.
-- *(Part B, collected later: Telegram bot token + Claude auth for nanoclaw.)*
+- **Telegram bot token + Claude auth** — for the host nanoclaw (used in step 7).
 
 ## 3. Bring up the platform
 ```bash
