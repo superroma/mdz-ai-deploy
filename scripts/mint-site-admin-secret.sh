@@ -12,7 +12,7 @@ secret_name="$(ctl admin-secret-name --site="$site")"
 token="$(docker compose -p "mdz-$site" exec -T mdz node packages/backend/dist/cli/admin.js mint-admin-token "agent-admin@$host")"
 [ -n "$token" ] || die "mint-admin-token produced no token for $site"
 # Upsert into OneCLI: create if absent, else update the value
-if onecli secrets list 2>/dev/null | grep -q "$secret_name"; then
+if onecli secrets list 2>/dev/null | grep -qw "$secret_name"; then
   onecli secrets update --name "$secret_name" --value "$token"
 else
   onecli secrets create --name "$secret_name" --type generic --value "$token" \

@@ -3,6 +3,7 @@
 # Install a ~30-minute timer for reminter.sh. macOS=launchd, Linux=cron fallback.
 if [ "$(uname)" = "Darwin" ]; then
   plist="$HOME/Library/LaunchAgents/com.mdz.reminter.plist"
+  mkdir -p "$(dirname "$plist")"
   cat > "$plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
