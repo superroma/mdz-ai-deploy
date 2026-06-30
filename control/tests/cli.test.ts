@@ -45,4 +45,12 @@ describe("control cli", () => {
     expect((await RUN(["admin-secret-name", "--site=demo"])).stdout).toBe("mdz-admin-demo");
     expect((await RUN(["site-api-host", "--site=demo", "--base=example.com"])).stdout).toBe("demo.example.com");
   });
+  it("merge-allowlist-root creates the allowlist when --file is missing", async () => {
+    const missing = `/nonexistent-${Date.now()}/mount-allowlist.json`;
+    const { stdout } = await RUN([
+      "merge-allowlist-root", `--file=${missing}`, "--path=/srv/sites", "--rw=true",
+    ]);
+    const j = JSON.parse(stdout);
+    expect(j.allowedRoots).toContainEqual({ path: "/srv/sites", allowReadWrite: true });
+  });
 });

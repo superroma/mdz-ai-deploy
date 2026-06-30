@@ -47,15 +47,20 @@ function main(): void {
     case "merge-allowlist-root": {
       const file = req("file");
       const cur = existsSync(file) ? readFileSync(file, "utf8") : null;
-      process.stdout.write(
-        mergeAllowlistRoot(cur, { path: req("path"), allowReadWrite: arg("rw") === "true", description: arg("desc") })
-      );
+      const desc = arg("desc");
+      const root: { path: string; allowReadWrite: boolean; description?: string } = {
+        path: req("path"),
+        allowReadWrite: arg("rw") === "true",
+      };
+      if (desc !== undefined) root.description = desc;
+      process.stdout.write(mergeAllowlistRoot(cur, root));
       break;
     }
     default:
       throw new Error(
         `unknown command: ${cmd ?? "(none)"}\n` +
-          "commands: site-name, site-domain, render-env, render-snippet"
+          "commands: site-name, site-domain, render-env, render-snippet, " +
+          "agent-folder, admin-secret-name, site-api-host, merge-allowlist-root"
       );
   }
 }
