@@ -38,9 +38,9 @@ elif [ "$role" = "admin" ]; then
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" additional_mounts \
     "$(printf '[{"hostPath":"%s","containerPath":"sites","readonly":false}]' "$abs_sites")"
   mkdir -p "$NC_DIR/groups/admin"
-  cat > "$NC_DIR/groups/admin/CLAUDE.local.md" <<'MD'
+  cat > "$NC_DIR/groups/admin/CLAUDE.local.md" <<MD
 You administer all MDZ sites. Content for every site is at /workspace/extra/sites/<site>/repo (READ-WRITE).
-To manage users on a site, call its admin API at https://<site>.<base>/api/admin/* — the gateway injects that
+To manage users on a site, call its admin API at https://<site>.${base}/api/admin/* — the gateway injects that
 site's admin token automatically (you never see the raw token). To change a site's general-agent instructions,
 edit /workspace/extra/sites/<site>/repo/pages/.mdz/general.md. You can never see deploy keys or JWT secrets.
 MD

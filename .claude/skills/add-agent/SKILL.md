@@ -11,6 +11,7 @@ Run from the `mdz-ai-deploy` repo root on a server where `/setup` deployed nanoc
 - nanoclaw service running; OneCLI gateway up; agent image built.
 - `scripts/ensure-mount-allowlist.sh` has been run (grants RW on `sites/` via `allowReadWrite`) and nanoclaw was restarted after (the allowlist is cached for the process lifetime).
 - For a general agent: `sites/<site>/repo/pages` exists (the site was added via `/add-mdz-site`).
+- The `mdz` image running each site must include Phase B-1's `mint-admin-token` (rebuild `mdz-app` at an `mdz` ref that includes it and re-pin the site's `MDZ_REF` via `render-site-env`). Verify: `docker compose -p mdz-<site> exec -T mdz node packages/backend/dist/cli/admin.js mint-admin-token agent-admin@<site>.<base>` prints a JWT before installing the re-minter.
 
 ## 2. Inputs (AskUserQuestion)
 - **Role**: `general` (per site) or `admin` (one-time, server-wide).

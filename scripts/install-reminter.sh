@@ -12,13 +12,16 @@ if [ "$(uname)" = "Darwin" ]; then
   <key>ProgramArguments</key><array><string>$REPO_ROOT/scripts/reminter.sh</string></array>
   <key>StartInterval</key><integer>1800</integer>
   <key>RunAtLoad</key><true/>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string></dict>
+  <key>StandardErrorPath</key><string>$REPO_ROOT/.reminter.log</string>
+  <key>StandardOutPath</key><string>$REPO_ROOT/.reminter.log</string>
 </dict></plist>
 PLIST
   launchctl unload "$plist" 2>/dev/null || true
   launchctl load "$plist"
   log "installed launchd re-minter (every 30m): $plist"
 else
-  line="*/30 * * * * $REPO_ROOT/scripts/reminter.sh >> $REPO_ROOT/.reminter.log 2>&1"
+  line="*/30 * * * * PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin $REPO_ROOT/scripts/reminter.sh >> $REPO_ROOT/.reminter.log 2>&1"
   ( crontab -l 2>/dev/null | grep -v 'scripts/reminter.sh'; echo "$line" ) | crontab -
   log "installed cron re-minter (every 30m)"
 fi

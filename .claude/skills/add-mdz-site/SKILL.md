@@ -29,6 +29,8 @@ scripts/add-deploy-key-github.sh <site> <owner/repo>     # or add secrets/<site>
 ```bash
 scripts/render-site-env.sh <site> <base> <content_repo> 819bb83 <branch>
 ```
+> Note: for the admin agent / re-minter (Part B), the pinned ref must include Phase B-1's `mint-admin-token`; re-pin to the rolled-out `mdz` SHA when provisioning agents.
+
 Writes `secrets/<site>/.env` (`chmod 600`, fresh `JWT_SECRET`, `SYNC_EXCLUDE=.auth/,.settings/`).
 
 ## 5. Clone content
