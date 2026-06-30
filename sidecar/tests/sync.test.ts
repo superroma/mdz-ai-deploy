@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { writeFileSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync, rmSync, chmodSync } from "node:fs";
 import { join } from "node:path";
 import { execa } from "execa";
 import { loadConfigFromEnv, type SyncConfig } from "../src/config.js";
@@ -99,6 +99,16 @@ describe("commitLocal", () => {
     await ensureExclusions(cfg);
     const content = readFileSync(join(repos.workDir, ".git", "info", "exclude"), "utf8");
     expect(content).toMatch(/\.auth\//);
+  });
+
+  it("never runs a repo-provided pre-commit hook (security: planted .git/hooks)", async () => {
+    const cfg = cfgFor(repos.workDir);
+    await ensureExclusions(cfg);
+    const hook = join(repos.workDir, ".git", "hooks", "pre-commit");
+    writeFileSync(hook, "#!/bin/sh\nexit 1\n");        // a hook that would ABORT the commit if run
+    chmodSync(hook, 0o755);
+    writeFileSync(join(repos.workDir, "page.md"), "# hello");
+    expect(await commitLocal(cfg)).toBe(true);          // commit succeeds => hook was NOT executed
   });
 });
 

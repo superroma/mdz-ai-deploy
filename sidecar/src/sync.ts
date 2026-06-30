@@ -32,6 +32,7 @@ export async function commitLocal(cfg: SyncConfig): Promise<boolean> {
   const msg = `Auto-save ${new Date().toISOString()}`;
   await execa("git", [
     "-C", cfg.repoDir,
+    "-c", "core.hooksPath=/dev/null",
     "-c", `user.name=${cfg.botName}`,
     "-c", `user.email=${cfg.botEmail}`,
     "commit", "-m", msg,
@@ -52,6 +53,7 @@ export async function pullRemote(
   try {
     await execa("git", [
       "-C", cfg.repoDir,
+      "-c", "core.hooksPath=/dev/null",
       "-c", `user.name=${cfg.botName}`,
       "-c", `user.email=${cfg.botEmail}`,
       "merge", "--no-edit", "--strategy-option=theirs", remoteRef,
