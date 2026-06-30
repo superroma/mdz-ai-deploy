@@ -150,10 +150,10 @@ SKILL phases: preflight (nanoclaw service up, container runtime + image, allowli
 
 ## Build order
 1. **Part A serve** — split compose, the two serve skills + scripts. **DONE** (see `docs/superpowers/plans/2026-06-29-control-plane-part-a-serve.md`); live multi-site verification is operator-run on the server.
-2. **Code changes** — nanoclaw per-agent `allowedTools` + generalization; mdz short-lived admin token. (Prereqs for secure agents.)
-3. **nanoclaw deploy** wired into `/setup`.
-4. **Per-site general agents** via `/add-agent`.
-5. **The one admin agent** (a one-time `/add-agent --role admin` or a `/setup` step) + the token re-minter.
+2. **Code changes** — nanoclaw per-agent `allowedTools` + generalization; mdz short-lived admin token. (Prereqs for secure agents.) **DONE** (see docs/superpowers/plans/2026-06-30-control-plane-part-b-agents.md; built against current nanocoai/nanoclaw — the old fork's code-change items were obsolete)
+3. **nanoclaw deploy** wired into `/setup`. **DONE** (see docs/superpowers/plans/2026-06-30-control-plane-part-b-agents.md; built against current nanocoai/nanoclaw — the old fork's code-change items were obsolete)
+4. **Per-site general agents** via `/add-agent`. **DONE** (see docs/superpowers/plans/2026-06-30-control-plane-part-b-agents.md; built against current nanocoai/nanoclaw — the old fork's code-change items were obsolete)
+5. **The one admin agent** (a one-time `/add-agent --role admin` or a `/setup` step) + the token re-minter. **DONE** (see docs/superpowers/plans/2026-06-30-control-plane-part-b-agents.md; built against current nanocoai/nanoclaw — the old fork's code-change items were obsolete)
 
 ## Verification
 **Serve:** `/setup` → Caddy up, `mdz_edge` exists, TLS self-test 200 on a valid LE chain. `/add-mdz-site demo` → `curl --fail https://demo.<base>/api/health` ok; magic link logs in as `admins`; two-way sync (local edit → `Auto-save` commit on remote; remote push → volume reflects it, remote-wins); `users.yaml` never pushed; add `demo2` → independent certs/content/secrets, no cross-tenant routing.

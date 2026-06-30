@@ -64,4 +64,7 @@ curl --fail https://<site>.<base>/api/health     # {"status":"ok",...}
 ```
 Report the site URL + the owner magic link.
 
-> **Part B (deferred):** provisioning this site's general agent and minting its admin token (design step 8) belongs to the agents phase. The content/secrets split here (`sites/` vs `secrets/`) is what later lets a single admin agent mount all content without ever seeing deploy keys or `JWT_SECRET`.
+## 10. Provision agents (Part B)
+Give the new site a general agent and extend the admin agent:
+`NC_DIR=~/work/nanoclaw scripts/register-agent.sh general <site> <base>` (then bind a chat),
+and `scripts/mint-site-admin-secret.sh <site>` + assign `mdz-admin-<site>` to the existing admin agent. See `/add-agent`.
