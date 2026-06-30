@@ -40,4 +40,9 @@ describe("control cli", () => {
     expect(err.exitCode).toBe(1);
     expect(err.stderr).toMatch(/unknown command/);
   });
+  it("agent-folder / admin-secret-name / site-api-host", async () => {
+    expect((await RUN(["agent-folder", "--site=demo", "--role=general"])).stdout).toBe("demo-general");
+    expect((await RUN(["admin-secret-name", "--site=demo"])).stdout).toBe("mdz-admin-demo");
+    expect((await RUN(["site-api-host", "--site=demo", "--base=example.com"])).stdout).toBe("demo.example.com");
+  });
 });

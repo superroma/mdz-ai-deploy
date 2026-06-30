@@ -1,5 +1,7 @@
+import { existsSync, readFileSync } from "node:fs";
 import { validateSiteName } from "./siteName.js";
 import { siteDomain, renderSiteEnv, renderCaddySnippet } from "./render.js";
+import { agentFolder, adminSecretName, siteApiHost, mergeAllowlistRoot } from "./agents.js";
 
 function arg(name: string): string | undefined {
   const pfx = `--${name}=`;
@@ -33,6 +35,23 @@ function main(): void {
     case "render-snippet":
       process.stdout.write(renderCaddySnippet(req("domain"), req("site")));
       break;
+    case "agent-folder":
+      process.stdout.write(agentFolder(req("site"), req("role") as "general" | "admin") + "\n");
+      break;
+    case "admin-secret-name":
+      process.stdout.write(adminSecretName(req("site")) + "\n");
+      break;
+    case "site-api-host":
+      process.stdout.write(siteApiHost(req("site"), req("base")) + "\n");
+      break;
+    case "merge-allowlist-root": {
+      const file = req("file");
+      const cur = existsSync(file) ? readFileSync(file, "utf8") : null;
+      process.stdout.write(
+        mergeAllowlistRoot(cur, { path: req("path"), allowReadWrite: arg("rw") === "true", description: arg("desc") })
+      );
+      break;
+    }
     default:
       throw new Error(
         `unknown command: ${cmd ?? "(none)"}\n` +
