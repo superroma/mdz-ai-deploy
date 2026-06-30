@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { validateSiteName } from "./siteName.js";
 import { siteDomain, renderSiteEnv, renderCaddySnippet } from "./render.js";
 import { agentFolder, adminSecretName, siteApiHost, mergeAllowlistRoot } from "./agents.js";
+import { repoSlug } from "./repo.js";
 
 function arg(name: string): string | undefined {
   const pfx = `--${name}=`;
@@ -35,6 +36,9 @@ function main(): void {
     case "render-snippet":
       process.stdout.write(renderCaddySnippet(req("domain"), req("site"), { http: arg("http") === "true" }));
       break;
+    case "repo-slug":
+      process.stdout.write(repoSlug(req("repo")) + "\n");
+      break;
     case "agent-folder":
       process.stdout.write(agentFolder(req("site"), req("role") as "general" | "admin") + "\n");
       break;
@@ -59,7 +63,7 @@ function main(): void {
     default:
       throw new Error(
         `unknown command: ${cmd ?? "(none)"}\n` +
-          "commands: site-name, site-domain, render-env, render-snippet, " +
+          "commands: site-name, site-domain, render-env, render-snippet, repo-slug, " +
           "agent-folder, admin-secret-name, site-api-host, merge-allowlist-root"
       );
   }

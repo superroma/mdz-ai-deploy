@@ -11,7 +11,7 @@ Run from the `mdz-ai-deploy` repo root on a server already bootstrapped by `/set
 - Shared platform up: `docker compose -p mdz-edge-caddy ps` shows Caddy running. If not, run `/setup`.
 
 ## 2. Inputs (AskUserQuestion)
-- **Content repo** SSH URL (`git@github.com:owner/repo.git`) and its `owner/repo` slug.
+- **Content repo** SSH URL (`git@github.com:owner/repo.git`) — the `owner/repo` slug is derived from it.
 - **Site name** — a DNS label (`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`); becomes the subdomain, compose project, and Caddy snippet name.
 - **Owner email** (seeded into `admins`).
 - **Branch** (default `main`).
@@ -22,7 +22,7 @@ If `sites/<site>/` or `secrets/<site>/` already exists, reconcile (re-run the st
 ## 3. Deploy key + GitHub registration
 ```bash
 scripts/gen-deploy-key.sh <site>
-scripts/add-deploy-key-github.sh <site> <owner/repo>     # or add secrets/<site>/deploy_key.pub manually (write access)
+scripts/add-deploy-key-github.sh <site> <content_repo>   # derives owner/repo from the URL; or add secrets/<site>/deploy_key.pub manually (write access)
 ```
 
 ## 4. Render per-site env
