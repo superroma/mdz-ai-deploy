@@ -2,8 +2,10 @@
 . "$(dirname "$0")/lib/common.sh"
 umask 077
 require_cmd node openssl
-# usage: render-site-env.sh <site> <base_domain> <content_repo> <mdz_ref> [branch]
-site="${1:?site}"; base="${2:?base_domain}"; repo="${3:?content_repo}"; ref="${4:?mdz_ref}"; branch="${5:-main}"
+# usage: render-site-env.sh <site> <base_domain> <content_repo> [mdz_ref=main] [branch=main]
+# mdz_ref defaults to main (latest mdz, incl. Part B's mint-admin-token); pass a
+# commit SHA instead for a reproducible build.
+site="${1:?site}"; base="${2:?base_domain}"; repo="${3:?content_repo}"; ref="${4:-main}"; branch="${5:-main}"
 ctl site-name --site="$site" >/dev/null
 dir="$REPO_ROOT/secrets/$site"; mkdir -p "$dir"
 jwt="$(openssl rand -hex 32)"

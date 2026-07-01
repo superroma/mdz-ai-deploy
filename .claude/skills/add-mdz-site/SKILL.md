@@ -27,9 +27,9 @@ scripts/add-deploy-key-github.sh <site> <content_repo>   # derives owner/repo fr
 
 ## 4. Render per-site env
 ```bash
-scripts/render-site-env.sh <site> <base> <content_repo> 819bb83 <branch>
+scripts/render-site-env.sh <site> <base> <content_repo> main <branch>
 ```
-> Note: for the admin agent / re-minter (Part B), the pinned ref must include Phase B-1's `mint-admin-token`; re-pin to the rolled-out `mdz` SHA when provisioning agents.
+> `main` builds the latest `mdz` (which already includes Part B's `mint-admin-token`). Pass a specific commit SHA instead of `main` for a reproducible build. To upgrade an existing site later, re-render with the new ref and re-run `site-up.sh` (it rebuilds the image).
 
 Writes `secrets/<site>/.env` (`chmod 600`, fresh `JWT_SECRET`, `SYNC_EXCLUDE=.auth/,.settings/`).
 

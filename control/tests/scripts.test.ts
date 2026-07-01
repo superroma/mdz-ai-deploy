@@ -28,6 +28,11 @@ describe("offline control scripts", () => {
     expect((statSync(env).mode & 0o777).toString(8)).toBe("600");
   });
 
+  it("render-site-env defaults MDZ_REF to main when the ref is omitted", async () => {
+    await execa("bash", ["scripts/render-site-env.sh", "demo", "example.com", "git@github.com:o/r.git"], { cwd: root });
+    expect(readFileSync(join(root, "secrets/demo/.env"), "utf8")).toContain("MDZ_REF=main");
+  });
+
   it("gen-deploy-key writes a 600 ed25519 key pair, idempotently", async () => {
     await execa("bash", ["scripts/gen-deploy-key.sh", "demo"], { cwd: root });
     const key = join(root, "secrets/demo/deploy_key");

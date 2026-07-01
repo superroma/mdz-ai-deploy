@@ -17,7 +17,7 @@ per site. Two operator skills drive it.
 ## Notes
 - **Edge modes.** Default `EDGE_MODE=letsencrypt`: Caddy terminates TLS via ACME on :80/:443 (needs a public IP + wildcard A record + `ACME_EMAIL`). `EDGE_MODE=tunnel`: Caddy is a plain-HTTP Host-router on :80 behind a Cloudflare tunnel (TLS at the edge, no ACME) — `Caddyfile.tunnel` + one dashboard public hostname `*.<base> → http://localhost:80`; the DNS/A-record steps are skipped.
 - Never `docker compose -p mdz-edge-caddy down -v` (caddy_data = LE certs).
-- `MDZ_REF` is pinned to `819bb83` (mdz incl. Phase 2 auth).
+- `MDZ_REF` defaults to `main` (latest mdz, incl. Part B's `mint-admin-token`); pass a commit SHA for a reproducible build. Upgrading a site = re-render with the new ref + re-run `site-up.sh`.
 - Member emails (`pages/.settings/users.yaml`) are kept off GitHub via `SYNC_EXCLUDE=.auth/,.settings/`.
 - The local single-site smoke stack (`compose/docker-compose.yml` + `Caddyfile`) is unchanged and independent of this split.
 
