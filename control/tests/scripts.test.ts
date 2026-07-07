@@ -105,4 +105,10 @@ describe("platform-up EDGE_MODE toggle", () => {
   it("letsencrypt mode requires ACME_EMAIL", async () => {
     await expect(run({ EDGE_MODE: "letsencrypt" })).rejects.toThrow();
   });
+
+  it("defaults EDGE_MODE from the .edge-mode marker (re-run stays tunnel, no ACME_EMAIL)", async () => {
+    writeFileSync(join(root, "platform/.edge-mode"), "tunnel\n");
+    const res = await run({}); // no EDGE_MODE, no ACME_EMAIL — must not flip to letsencrypt
+    expect(res.exitCode).toBe(0);
+  });
 });

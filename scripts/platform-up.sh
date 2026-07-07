@@ -4,7 +4,9 @@ require_cmd docker
 # EDGE_MODE=letsencrypt (default) — Caddy terminates TLS via ACME; needs ACME_EMAIL.
 # EDGE_MODE=tunnel             — Caddy is HTTP-only on :80 behind a Cloudflare tunnel
 #                               (TLS at the edge); no ACME_EMAIL required.
-EDGE_MODE="${EDGE_MODE:-letsencrypt}"
+# Default from the recorded marker so re-runs stay in the same mode (a bare re-run
+# must NOT silently flip a live tunnel edge back to letsencrypt); env still overrides.
+EDGE_MODE="${EDGE_MODE:-$(edge_mode)}"
 docker network inspect mdz_edge >/dev/null 2>&1 || docker network create mdz_edge
 if [ "$EDGE_MODE" = "tunnel" ]; then
   export CADDY_FILE="./caddy/Caddyfile.tunnel"
