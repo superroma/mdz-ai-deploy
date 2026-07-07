@@ -33,6 +33,16 @@ describe("offline control scripts", () => {
     expect(readFileSync(join(root, "secrets/demo/.env"), "utf8")).toContain("MDZ_REF=main");
   });
 
+  it("render-site-env preserves an existing JWT_SECRET on re-render (safe upgrade)", async () => {
+    const envPath = join(root, "secrets/demo/.env");
+    await execa("bash", ["scripts/render-site-env.sh", "demo", "example.com", "git@github.com:o/r.git", "819bb83"], { cwd: root });
+    const first = readFileSync(envPath, "utf8").match(/^JWT_SECRET=(.+)$/m)![1];
+    await execa("bash", ["scripts/render-site-env.sh", "demo", "example.com", "git@github.com:o/r.git", "main"], { cwd: root });
+    const env2 = readFileSync(envPath, "utf8");
+    expect(env2.match(/^JWT_SECRET=(.+)$/m)![1]).toBe(first); // secret preserved
+    expect(env2).toContain("MDZ_REF=main");                   // ref updated
+  });
+
   it("gen-deploy-key writes a 600 ed25519 key pair, idempotently", async () => {
     await execa("bash", ["scripts/gen-deploy-key.sh", "demo"], { cwd: root });
     const key = join(root, "secrets/demo/deploy_key");
