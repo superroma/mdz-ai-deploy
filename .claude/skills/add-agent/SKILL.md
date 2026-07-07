@@ -7,19 +7,22 @@ description: Provision an MDZ agent on the host nanoclaw — a per-site read-onl
 
 Run from the `mdz-ai-deploy` repo root on a server where `/setup` deployed nanoclaw. Set `NC_DIR` to the nanoclaw checkout (default `~/work/nanoclaw`).
 
-## 1. Preflight
+**`/add-agent` needs a `role`.** Establish it before anything else — this is the first thing to resolve when the skill is invoked bare.
+
+## 1. Role + inputs (AskUserQuestion) — do this FIRST
+Take the role from the invocation if given (e.g. `/add-agent general <site>`); otherwise ask:
+- **Role**: `general` (a read-only agent for ONE existing site) or `admin` (the one-time, server-wide read-write agent).
+- For `general`: **site name** (DNS label — an existing `/add-mdz-site` site) and **base domain**.
+- **Telegram chat id** for this agent's dedicated chat.
+
+## 2. Preflight (once the role is known)
 **Hard prerequisite: `/setup` must have deployed nanoclaw on THIS host (through step 7).** `register-agent.sh` calls `require_nanoclaw` and exits immediately with an actionable message if `ncl` isn't on PATH. If that fires, **`/setup` is not finished — run its nanoclaw-deploy step and retry.** Do **not** go searching other folders for a nanoclaw runtime; a missing `ncl` means it was never deployed here, full stop.
 
-Once nanoclaw is up, also confirm:
+Also confirm:
 - OneCLI gateway up; agent image built.
 - `scripts/ensure-mount-allowlist.sh` has been run (grants RW on `sites/` via `allowReadWrite`) and nanoclaw was restarted after (the allowlist is cached for the process lifetime).
-- For a general agent: `sites/<site>/repo/pages` exists (the site was added via `/add-mdz-site`).
-- The `mdz` image running each site must include Phase B-1's `mint-admin-token` (rebuild `mdz-app` at an `mdz` ref that includes it and re-pin the site's `MDZ_REF` via `render-site-env`). Verify: `docker compose -p mdz-<site> exec -T mdz node packages/backend/dist/cli/admin.js mint-admin-token agent-admin@<site>.<base>` prints a JWT before installing the re-minter.
-
-## 2. Inputs (AskUserQuestion)
-- **Role**: `general` (per site) or `admin` (one-time, server-wide).
-- For `general`: **site name** (DNS label) and **base domain**.
-- **Telegram chat id** for this agent's dedicated chat.
+- **general** → `sites/<site>/repo/pages` exists (the site was added via `/add-mdz-site`).
+- **admin** → the `mdz` image running each site includes Phase B-1's `mint-admin-token` (rebuild `mdz-app` at an `mdz` ref that includes it and re-pin the site's `MDZ_REF` via `render-site-env`). Verify: `docker compose -p mdz-<site> exec -T mdz node packages/backend/dist/cli/admin.js mint-admin-token agent-admin@<site>.<base>` prints a JWT before installing the re-minter.
 
 ## 3a. General agent
 ```bash
