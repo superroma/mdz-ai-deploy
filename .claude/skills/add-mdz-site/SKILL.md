@@ -68,5 +68,5 @@ Report the site URL + the owner magic link.
 
 ## 10. Provision agents (Part B)
 Give the new site a general agent and extend the admin agent:
-`NC_DIR=~/work/nanoclaw scripts/register-agent.sh general <site> <base>` (then bind a chat),
+`scripts/register-agent.sh general <site> <base>` (then bind a chat),
 and `scripts/mint-site-admin-secret.sh <site>` + assign `mdz-admin-<site>` to the existing admin agent. See `/add-agent`.

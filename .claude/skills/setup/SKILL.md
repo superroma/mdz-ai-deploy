@@ -51,10 +51,15 @@ scripts/tls-selftest.sh <base>
 Expects `TLS self-test passed`. Uses the fixed host `mdz-selftest.<base>` to spare LE rate limits, then removes the probe snippet.
 
 ## 7. Deploy the host nanoclaw (agents)
-Collect the Telegram bot token + Claude auth (step 2). Then:
-`NC_DIR=~/work/nanoclaw TELEGRAM_BOT_TOKEN=<token> scripts/deploy-nanoclaw.sh`
-Follow nanoclaw's own setup (service install, `/init-onecli`, add-telegram). Then grant agents access to content:
-`scripts/ensure-mount-allowlist.sh` and restart nanoclaw. Provision agents with `/add-agent`.
+`scripts/deploy-nanoclaw.sh` clones nanoclaw into the **toolkit-owned `./nanoclaw`** (gitignored) — it does not touch any nanoclaw checkout elsewhere. nanoclaw then sets **itself** up via its own Claude Code skills (deps, Claude auth, agent container, service); run them in that checkout:
+```bash
+scripts/deploy-nanoclaw.sh            # clones ./nanoclaw, prints the hand-off
+cd nanoclaw && claude
+  # /setup        — dependencies, Claude auth, agent container, service
+  # /add-telegram — wire your Telegram bot token (BotFather)
+  # /init-onecli  — OneCLI gateway; puts onecli/ncl on PATH
+```
+Back in this repo, grant agents access to content — `scripts/ensure-mount-allowlist.sh` then restart nanoclaw — and provision agents with `/add-agent`.
 
 ## 8. Report
 Confirm: platform up, `mdz_edge` exists, DNS resolves, TLS chain valid. The server is ready for `/add-mdz-site`.

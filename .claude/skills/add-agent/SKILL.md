@@ -5,7 +5,7 @@ description: Provision an MDZ agent on the host nanoclaw — a per-site read-onl
 
 # /add-agent — provision a site general agent or the one admin agent
 
-Run from the `mdz-ai-deploy` repo root on a server where `/setup` deployed nanoclaw. Set `NC_DIR` to the nanoclaw checkout (default `~/work/nanoclaw`).
+Run from the `mdz-ai-deploy` repo root on a server where `/setup` deployed nanoclaw. Uses the toolkit-owned checkout `./nanoclaw` (override with `NC_DIR` only to point at a different one).
 
 **`/add-agent` needs a `role`.** Establish it before anything else — this is the first thing to resolve when the skill is invoked bare.
 
@@ -26,13 +26,13 @@ Also confirm:
 
 ## 3a. General agent
 ```bash
-NC_DIR=~/work/nanoclaw scripts/register-agent.sh general <site> <base>   # prints the group id
+scripts/register-agent.sh general <site> <base>   # prints the group id
 ```
 Creates the group, sets a minimal skill set + a **read-only** `pages/` mount at `/workspace/extra/pages`, writes `groups/<site>-general/CLAUDE.local.md` (a thin pointer to the synced `pages/.mdz/general.md`), seeds that file, and restarts. No secrets are assigned — the general agent holds none.
 
 ## 3b. Admin agent (one-time)
 ```bash
-NC_DIR=~/work/nanoclaw scripts/register-agent.sh admin <base>           # prints the group id
+scripts/register-agent.sh admin <base>           # prints the group id
 ```
 Creates the `admin` group with a **read-write** mount of all `sites/` content (no secrets — `secrets/` is a sibling, never mounted), writes its instructions, and restarts. Then wire per-site tokens:
 ```bash

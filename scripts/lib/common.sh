@@ -4,6 +4,11 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
+# nanoclaw checkout THIS toolkit owns — deploy-nanoclaw.sh clones it here (gitignored).
+# We never touch a nanoclaw checkout outside this repo. Override NC_DIR only to point
+# deliberately at a different checkout.
+NC_DIR="${NC_DIR:-$REPO_ROOT/nanoclaw}"; export NC_DIR
+
 log()  { printf '\033[1;34m[ctl]\033[0m %s\n' "$*" >&2; }
 warn() { printf '\033[1;33m[ctl]\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31m[ctl] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }

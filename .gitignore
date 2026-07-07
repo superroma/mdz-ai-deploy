@@ -7,6 +7,7 @@ data/
 # control-plane per-site state (never committed)
 /sites/
 /secrets/
+/nanoclaw/                 # the toolkit-owned nanoclaw checkout (deploy-nanoclaw.sh clones it)
 platform/caddy/sites/*.caddy
 !platform/caddy/sites/.gitkeep
 platform/.edge-mode

@@ -2,8 +2,8 @@
 . "$(dirname "$0")/lib/common.sh"
 require_cmd node
 require_nanoclaw   # fails fast + actionable if /setup hasn't deployed nanoclaw here
-# usage: NC_DIR=~/work/nanoclaw register-agent.sh general <site> <base> | register-agent.sh admin <base>
-: "${NC_DIR:?NC_DIR required}"
+# usage: register-agent.sh general <site> <base> | register-agent.sh admin <base>
+# NC_DIR defaults to the toolkit-owned checkout ($REPO_ROOT/nanoclaw); see common.sh.
 role="${1:?role (general|admin)}"
 abs_sites="$REPO_ROOT/sites"
 

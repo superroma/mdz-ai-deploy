@@ -1,19 +1,33 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/lib/common.sh"
-require_cmd git docker node
-# usage: NC_DIR=~/work/nanoclaw TELEGRAM_BOT_TOKEN=... deploy-nanoclaw.sh
-: "${NC_DIR:?NC_DIR (nanoclaw checkout path) is required}"
-[ -d "$NC_DIR/.git" ] || die "no nanoclaw checkout at $NC_DIR (clone nanocoai/nanoclaw there first)"
-log "Deploying nanoclaw from $NC_DIR"
-# 1. Install + build (nanoclaw uses pnpm)
-( cd "$NC_DIR" && command -v pnpm >/dev/null || die "pnpm required"; pnpm install && pnpm build )
-# 2. Build the agent container image
-( cd "$NC_DIR/container" && bash build.sh )
-# 3. Run nanoclaw's own setup (installs the launchd/systemd service, OneCLI init, etc.)
-log "Run nanoclaw's setup interactively (its /setup or setup.sh) to install the service + OneCLI + Anthropic creds:"
-log "  cd $NC_DIR && bash setup.sh    # then /init-onecli, and add-telegram with TELEGRAM_BOT_TOKEN"
-# 4. Telegram adapter (idempotent; needs the token in env)
-if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -f "$NC_DIR/setup/add-telegram.sh" ]; then
-  ( cd "$NC_DIR" && TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" bash setup/add-telegram.sh ) || warn "add-telegram failed; run it manually"
+require_cmd git
+# Clone the nanoclaw checkout THIS toolkit owns (NC_DIR, default $REPO_ROOT/nanoclaw)
+# and hand off to nanoclaw's OWN skill-driven setup. nanoclaw sets itself up via its
+# Claude Code skills (deps, Claude auth, agent container, service) — we do not
+# bash-orchestrate that, and we never touch a nanoclaw checkout outside this repo.
+# usage: [NC_DIR=...] [NANOCLAW_REPO=...] deploy-nanoclaw.sh
+repo_url="${NANOCLAW_REPO:-https://github.com/nanocoai/nanoclaw}"
+if [ -d "$NC_DIR/.git" ]; then
+  log "nanoclaw checkout present at $NC_DIR"
+else
+  log "cloning nanoclaw ($repo_url) into $NC_DIR"
+  git clone "$repo_url" "$NC_DIR"
 fi
-log "nanoclaw deploy steps issued. Verify the service is running before provisioning agents."
+cat >&2 <<EOF
+
+nanoclaw is cloned at: $NC_DIR
+
+Deploy it by running ITS OWN Claude Code skills there (they handle dependencies,
+Claude auth, the agent container, and the service — this toolkit does not):
+
+  cd "$NC_DIR" && claude
+    /setup          # dependencies, Claude auth, agent container, service
+    /add-telegram   # wire your Telegram bot token (from BotFather)
+    /init-onecli    # OneCLI gateway; puts onecli/ncl on PATH
+
+When nanoclaw's service is running and 'ncl'/'onecli' are on PATH, come back here,
+grant content access, and provision agents:
+  scripts/ensure-mount-allowlist.sh    # then restart nanoclaw
+  /add-agent
+EOF
+log "nanoclaw checkout ready at $NC_DIR"
