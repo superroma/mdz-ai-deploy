@@ -8,7 +8,10 @@ description: Provision an MDZ agent on the host nanoclaw — a per-site read-onl
 Run from the `mdz-ai-deploy` repo root on a server where `/setup` deployed nanoclaw. Set `NC_DIR` to the nanoclaw checkout (default `~/work/nanoclaw`).
 
 ## 1. Preflight
-- nanoclaw service running; OneCLI gateway up; agent image built.
+**Hard prerequisite: `/setup` must have deployed nanoclaw on THIS host (through step 7).** `register-agent.sh` calls `require_nanoclaw` and exits immediately with an actionable message if `ncl` isn't on PATH. If that fires, **`/setup` is not finished — run its nanoclaw-deploy step and retry.** Do **not** go searching other folders for a nanoclaw runtime; a missing `ncl` means it was never deployed here, full stop.
+
+Once nanoclaw is up, also confirm:
+- OneCLI gateway up; agent image built.
 - `scripts/ensure-mount-allowlist.sh` has been run (grants RW on `sites/` via `allowReadWrite`) and nanoclaw was restarted after (the allowlist is cached for the process lifetime).
 - For a general agent: `sites/<site>/repo/pages` exists (the site was added via `/add-mdz-site`).
 - The `mdz` image running each site must include Phase B-1's `mint-admin-token` (rebuild `mdz-app` at an `mdz` ref that includes it and re-pin the site's `MDZ_REF` via `render-site-env`). Verify: `docker compose -p mdz-<site> exec -T mdz node packages/backend/dist/cli/admin.js mint-admin-token agent-admin@<site>.<base>` prints a JWT before installing the re-minter.

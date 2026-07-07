@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { execa } from "execa";
 import { mkdtempSync, rmSync, readFileSync, existsSync, cpSync, statSync, symlinkSync, writeFileSync, chmodSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Build a throwaway REPO_ROOT containing only what the scripts need: control/ + scripts/.
 function fakeRepo(): string {
@@ -62,6 +62,17 @@ describe("offline control scripts", () => {
     await expect(
       execa("bash", ["scripts/gen-deploy-key.sh", "Bad_Name"], { cwd: root })
     ).rejects.toThrow();
+  });
+
+  it("register-agent fails fast with an actionable message when nanoclaw isn't deployed", async () => {
+    // ncl off PATH (node still present) => require_nanoclaw should say /setup isn't finished.
+    const nodeDir = dirname(process.execPath);
+    await expect(
+      execa("bash", ["scripts/register-agent.sh", "general", "demo", "example.com"], {
+        cwd: root,
+        env: { NC_DIR: "/tmp/nc", PATH: `${nodeDir}:/usr/bin:/bin` },
+      })
+    ).rejects.toThrow(/nanoclaw is not deployed/);
   });
 });
 

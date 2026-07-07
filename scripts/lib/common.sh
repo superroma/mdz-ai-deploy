@@ -17,6 +17,16 @@ require_cmd() {
 # Run the control TS CLI: ctl <subcommand> [--flag=val ...]
 ctl() { node --import tsx/esm "$REPO_ROOT/control/src/cli.ts" "$@"; }
 
+# Assert nanoclaw is deployed on this host (its CLI is on PATH). Part B scripts
+# call this so an incomplete /setup fails with an actionable message instead of a
+# bare "command not found" — and so callers don't go hunting for a runtime that
+# was never deployed here.
+require_nanoclaw() {
+  for c in ncl onecli; do
+    command -v "$c" >/dev/null 2>&1 || die "nanoclaw is not deployed on this host ('$c' not on PATH). /setup is not finished — run its nanoclaw-deploy step (step 7, scripts/deploy-nanoclaw.sh) here, then retry."
+  done
+}
+
 # Edge mode marker written by platform-up.sh: "tunnel" (Caddy HTTP-only on :80) or
 # "letsencrypt" (default — Caddy terminates TLS). Other scripts read this to render
 # per-site snippets as http:// (tunnel) vs https (letsencrypt).

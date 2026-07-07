@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/lib/common.sh"
-require_cmd node ncl
+require_cmd node
+require_nanoclaw   # fails fast + actionable if /setup hasn't deployed nanoclaw here
 # usage: NC_DIR=~/work/nanoclaw register-agent.sh general <site> <base> | register-agent.sh admin <base>
 : "${NC_DIR:?NC_DIR required}"
 role="${1:?role (general|admin)}"

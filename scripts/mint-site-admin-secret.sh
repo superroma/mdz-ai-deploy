@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/lib/common.sh"
-require_cmd docker node onecli
+require_cmd docker node
+require_nanoclaw   # fails fast + actionable if /setup hasn't deployed nanoclaw/OneCLI here
 # usage: mint-site-admin-secret.sh <site>   (mints + upserts the per-site admin token in OneCLI)
 site="${1:?site}"
 ctl site-name --site="$site" >/dev/null
