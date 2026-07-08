@@ -18,11 +18,13 @@ if [ "$role" = "general" ]; then
   [ -d "$abs_sites/$site/repo/pages" ] || die "missing $abs_sites/$site/repo/pages"
   gid="$(create_group "$site general" "$folder")"
   case "$gid" in ""|*[[:space:]]*) die "unexpected group id from ncl: '$gid'";; esac
-  ncl groups config update --id "$gid" --provider claude --assistant-name "$site"
+  # v2: `ncl groups create` does NOT create the container_config row; our helper ensures it.
+  # Run the helper sets first — `ncl groups config update` errors on a missing config row.
   # skills minimal + RO pages mount (no ncl command for these -> helper)
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" skills '["welcome"]'
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" additional_mounts \
     "$(printf '[{"hostPath":"%s/%s/repo/pages","containerPath":"pages","readonly":true}]' "$abs_sites" "$site")"
+  ncl groups config update --id "$gid" --provider claude --assistant-name "$site"
   # operator-editable instructions (thin pointer to the synced file inside the RO mount)
   mkdir -p "$NC_DIR/groups/$folder"
   printf 'Treat /workspace/extra/pages/.mdz/general.md as your operator instructions. You are READ-ONLY over this site'"'"'s pages.\n' \
@@ -37,9 +39,10 @@ elif [ "$role" = "admin" ]; then
   base="${2:?base}"
   gid="$(create_group "admin" "admin")"
   case "$gid" in ""|*[[:space:]]*) die "unexpected group id from ncl: '$gid'";; esac
-  ncl groups config update --id "$gid" --provider claude --assistant-name "admin"
+  # v2: helper first (it ensures the container_config row); config update needs the row.
   NC_DIR="$NC_DIR" "$REPO_ROOT/scripts/nc-set-container-json.sh" "$gid" additional_mounts \
     "$(printf '[{"hostPath":"%s","containerPath":"sites","readonly":false}]' "$abs_sites")"
+  ncl groups config update --id "$gid" --provider claude --assistant-name "admin"
   mkdir -p "$NC_DIR/groups/admin"
   cat > "$NC_DIR/groups/admin/CLAUDE.local.md" <<MD
 You administer all MDZ sites. Content for every site is at /workspace/extra/sites/<site>/repo (READ-WRITE).
